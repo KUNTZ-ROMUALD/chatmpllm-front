@@ -1,0 +1,118 @@
+<mat-sidenav-container class="shell-container">
+  <mat-sidenav
+    mode="side"
+    [opened]="isDrawerOpen()"
+    class="shell-sidenav"
+    (closedStart)="closeDrawer()"
+  >
+    <div class="brand-block">
+      <div class="brand-logo">AI</div>
+      <div>
+        <div class="brand-title">AI Nexus</div>
+        <div class="brand-subtitle">Multi-provider chat</div>
+      </div>
+    </div>
+
+    <mat-nav-list>
+      @for (item of visibleNavItems(); track trackByRoute($index, item)) {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="active-nav-item"
+          [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+
+    @if (isAuthenticated()) {
+      <mat-divider></mat-divider>
+
+      <app-chat-history-sidebar
+        [activeConversationId]="activeChatConversationId()"
+        (conversationSelected)="openChatConversation($event)"
+        (newConversationRequested)="startNewConversationFromSidebar()"
+      />
+    }
+
+    <mat-divider></mat-divider>
+
+    <div class="shell-footer">
+      <div class="session-chip">
+        <mat-icon>verified_user</mat-icon>
+        <span>{{ sessionLabel() }}</span>
+      </div>
+      <div class="session-user">{{ currentUserLabel() }}</div>
+
+      @if (isAnonymous()) {
+        <div class="shell-guest-actions">
+          <button mat-stroked-button type="button" (click)="openLogin()">Se connecter</button>
+          <button mat-button type="button" (click)="openRegister()">Créer un compte</button>
+        </div>
+      } @else {
+        <button mat-flat-button color="primary" type="button" (click)="logout()" [disabled]="isLoggingOut()">
+          <span class="btn-content">
+          @if (isLoggingOut()) {
+            <mat-spinner diameter="18"></mat-spinner>
+            <span>Déconnexion...</span>
+          } @else {
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          }
+          </span>
+        </button>
+      }
+    </div>
+
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="shell-toolbar">
+      <button mat-icon-button type="button" (click)="toggleDrawer()" aria-label="Ouvrir le menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="toolbar-title">AI Nexus</span>
+
+      <span class="toolbar-spacer"></span>
+
+      <div class="toolbar-session-pill">
+        <mat-icon>circle</mat-icon>
+        <span>{{ sessionLabel() }}</span>
+      </div>
+
+      @if (sessionStatus() === 'loading') {
+        <mat-progress-spinner diameter="22" mode="indeterminate"></mat-progress-spinner>
+      } @else if (isAuthenticated()) {
+        <button mat-button [matMenuTriggerFor]="accountMenu">
+          <mat-icon>account_circle</mat-icon>
+          <span>Compte</span>
+        </button>
+
+        <mat-menu #accountMenu="matMenu">
+          <button mat-menu-item disabled>
+            <mat-icon>person</mat-icon>
+            <span>{{ currentUserLabel() }}</span>
+          </button>
+          <button mat-menu-item disabled>
+            <mat-icon>info</mat-icon>
+            <span>{{ sessionLabel() }}</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()" [disabled]="isLoggingOut()">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </mat-menu>
+      } @else {
+        <button mat-button type="button" (click)="openLogin()">Connexion</button>
+      }
+    </mat-toolbar>
+
+    <main class="shell-content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

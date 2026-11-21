@@ -1,0 +1,54 @@
+<main class="conversations-page">
+  <header class="page-header">
+    <div>
+      <p class="page-header__eyebrow">Espace de travail</p>
+      <h1>Historique</h1>
+      <p class="page-header__description">
+        Retrouvez vos conversations sauvegardées et reprenez un échange dans le Chat.
+      </p>
+    </div>
+
+    <a mat-flat-button color="primary" routerLink="/chat">
+      <mat-icon>add</mat-icon>
+      <span>Nouvelle conversation</span>
+    </a>
+  </header>
+
+  @if (isAuthenticated()) {
+    <section class="history-panel">
+      <app-conversation-sidebar
+        (conversationSelected)="openConversation($event)"
+      />
+    </section>
+  } @else {
+    <section class="guest-history-state" aria-label="Historique indisponible en mode invité">
+      <div class="guest-history-state__icon">
+        <mat-icon>history</mat-icon>
+      </div>
+
+      <div class="guest-history-state__content">
+        <p class="guest-history-state__eyebrow">Mode invité</p>
+        <h2>Votre historique est disponible avec un compte.</h2>
+        <p>
+          En mode invité, le chat reste utilisable seul avec une clé API locale,
+          mais les conversations ne sont pas enregistrées sur le serveur.
+        </p>
+      </div>
+
+      <div class="guest-history-state__actions">
+        <a mat-flat-button color="primary" routerLink="/auth/login">
+          <mat-icon>login</mat-icon>
+          <span>Se connecter</span>
+        </a>
+        <a mat-stroked-button routerLink="/auth/register">
+          <mat-icon>person_add</mat-icon>
+          <span>Créer un compte</span>
+        </a>
+        <a mat-button routerLink="/chat">
+          <mat-icon>chat</mat-icon>
+          <span>Retour au Chat</span>
+        </a>
+      </div>
+    </section>
+  }
+</main>

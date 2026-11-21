@@ -1,0 +1,28 @@
+<div
+  class="code-block"
+  [class.code-block--provisional]="isProvisional()"
+>
+  <div class="code-block__header">
+    <span class="code-block__language">{{ languageLabel() ?? 'Code' }}</span>
+
+    <button
+      type="button"
+      class="code-block__copy"
+      (click)="copyCode()"
+    >
+      @switch (copyStatus()) {
+        @case ('success') {
+          Copié !
+        }
+        @case ('error') {
+          Échec de la copie
+        }
+        @default {
+          Copier
+        }
+      }
+    </button>
+  </div>
+
+  <pre><code>@for (segment of segments(); track $index) {<span [class]="segment.className">{{ segment.text }}</span>}</code></pre>
+</div>

@@ -1,0 +1,71 @@
+<section class="selector" aria-label="Sélection du fournisseur et du modèle">
+  <div class="selector__field">
+    <span class="selector__label">Fournisseur</span>
+
+    @if (isProvidersLoading) {
+      <div class="selector__status" role="status">
+        <mat-spinner diameter="20" />
+        <span>Chargement des fournisseurs…</span>
+      </div>
+    } @else if (providersError) {
+      <div class="selector__error" role="alert">
+        <span>{{ providersError }}</span>
+        <button mat-button type="button" (click)="retryProviders.emit()">
+          Réessayer
+        </button>
+      </div>
+    } @else if (providers.length === 0) {
+      <p class="selector__empty">Aucun fournisseur disponible.</p>
+    } @else {
+      <mat-form-field appearance="outline">
+        <mat-select
+          [disabled]="disabled || isProvidersLoading"
+          aria-label="Fournisseur"
+          [value]="selectedProviderId"
+          (selectionChange)="onProviderSelectionChange($event.value)"
+        >
+          <mat-option [value]="null">Choisir un fournisseur</mat-option>
+          @for (provider of providers; track provider.id) {
+            <mat-option [value]="provider.id">{{ provider.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+  </div>
+
+  <div class="selector__field">
+    <span class="selector__label">Modèle</span>
+
+    @if (!selectedProviderId) {
+      <p class="selector__empty">Choisissez d’abord un fournisseur.</p>
+    } @else if (isModelsLoading) {
+      <div class="selector__status" role="status">
+        <mat-spinner diameter="20" />
+        <span>Chargement des modèles…</span>
+      </div>
+    } @else if (modelsError) {
+      <div class="selector__error" role="alert">
+        <span>{{ modelsError }}</span>
+        <button mat-button type="button" (click)="retryModels.emit()">
+          Réessayer
+        </button>
+      </div>
+    } @else if (models.length === 0) {
+      <p class="selector__empty">Aucun modèle actif pour ce fournisseur.</p>
+    } @else {
+      <mat-form-field appearance="outline">
+        <mat-select
+          [disabled]="disabled || isProvidersLoading || isModelsLoading || !selectedProviderId"
+          aria-label="Modèle"
+          [value]="selectedModelId"
+          (selectionChange)="onModelSelectionChange($event.value)"
+        >
+          <mat-option [value]="null">Choisir un modèle</mat-option>
+          @for (model of models; track model.id) {
+            <mat-option [value]="model.id">{{ model.display_name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+  </div>
+</section>

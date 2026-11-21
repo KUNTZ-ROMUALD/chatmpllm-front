@@ -1,0 +1,366 @@
+<div class="chat-container">
+
+  @if (messages().length === 0 && !showCurrentAssistant()) {
+    <!-- VUE D'ACCUEIL CENTRALISÉE (Style Claude) -->
+    <section class="welcome-viewport" aria-label="Accueil du Chat">
+      <div class="welcome-content">
+        <!-- Logo Sparkle Icon -->
+        <div class="welcome-icon">
+          <mat-icon>auto_awesome</mat-icon>
+        </div>
+
+        <h1 class="welcome-title">Bonjour, comment puis-je vous aider aujourd'hui ?</h1>
+        <p class="welcome-subtitle">
+          Sélectionnez un modèle, posez une question technique, explorez des concepts ou commencez à rédiger.
+        </p>
+
+        <!-- Carte Input Principale Centrée -->
+        <div class="composer-card composer-card--welcome">
+          <textarea
+            #messageTextarea
+            class="composer-textarea"
+            rows="3"
+            maxlength="20000"
+            placeholder="Posez une question, collez du code ou décrivez votre projet..."
+            [value]="messageDraft()"
+            [disabled]="isBusy()"
+            (input)="onMessageInput($event)"
+            (keydown)="onKeyDown($event)"
+          ></textarea>
+
+          <div class="composer-card__footer">
+            <div class="composer-card__left">
+              <button
+                type="button"
+                class="composer-tool-btn"
+                title="Joindre un fichier ou document"
+              >
+                <mat-icon>attach_file</mat-icon>
+              </button>
+
+              <button
+                type="button"
+                class="model-pill-btn"
+                (click)="navigateToProviders()"
+                title="Modifier le fournisseur et le modèle dans la page Providers"
+              >
+                <span class="model-pill-dot"></span>
+                <span class="model-pill-name">{{ selectedModelDisplayName() }}</span>
+                <mat-icon class="model-pill-icon">tune</mat-icon>
+              </button>
+            </div>
+
+            <div class="composer-card__right">
+              <span class="composer-hint">Entrée pour envoyer</span>
+              <button
+                type="button"
+                class="send-btn"
+                [disabled]="!canSend()"
+                (click)="sendMessage()"
+                title="Envoyer le message"
+              >
+                <mat-icon>arrow_upward</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        @if (isSelectedProviderMissingApiKey()) {
+          <div class="guest-key-reminder" role="alert">
+            <mat-icon>vpn_key</mat-icon>
+            <span>
+              Clé API absente pour dialoguer vous pouvez,
+            </span>
+            <button
+              type="button"
+              class="reminder-link-btn"
+              (click)="navigateToApiKeys()"
+            >
+              Configurer ma clé dans « Clés API »
+            </button>
+          </div>
+        }
+
+        <p class="disclaimer-text">
+          AI Nexus orchestre des LLMs tiers. Les réponses peuvent contenir des inexactitudes factuelles.
+        </p>
+      </div>
+    </section>
+  } @else {
+    <!-- VUE DU FLUX DE CONVERSATION (Canonical Dashboard) -->
+    <header class="chat-thread-header">
+      <div class="thread-header-left">
+        <button
+          type="button"
+          class="model-pill-btn"
+          (click)="navigateToProviders()"
+          title="Modifier le fournisseur et le modèle"
+        >
+          <span class="model-pill-dot"></span>
+          <span class="model-pill-name">{{ selectedModelDisplayName() }}</span>
+          <mat-icon class="model-pill-icon">tune</mat-icon>
+        </button>
+
+        <span class="thread-title">
+          {{ activeConversationTitle() ?? 'Discussion en cours' }}
+        </span>
+      </div>
+
+      <div class="thread-header-right">
+        <button
+          type="button"
+          class="new-chat-btn"
+          [disabled]="isBusy()"
+          (click)="startNewConversation()"
+        >
+          <mat-icon>add</mat-icon>
+          <span>Nouvelle conversation</span>
+        </button>
+      </div>
+    </header>
+
+    @if (conversationError(); as error) {
+      <div class="alert-banner alert-banner--error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    }
+
+    @if (chatStream.error(); as streamError) {
+      <div class="alert-banner alert-banner--error" role="alert">
+        <mat-icon>warning</mat-icon>
+        <span>{{ streamError.message }}</span>
+        @if (streamError.kind === 'selection_unavailable') {
+          <button type="button" class="alert-btn" (click)="retryProviders()">
+            Réessayer
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Fil des messages -->
+    <div class="chat-stream-frame">
+      <main class="chat-stream-viewport"
+            id="chat-stream-viewport"
+            #chatStreamViewport
+            (scroll)="onChatViewportScroll()">
+        <div class="session-meta-banner">
+          <mat-icon>lock</mat-icon>
+          <span>
+            Session chiffrée • Fournisseur
+            {{ selectedProvider()?.name ?? 'Multi-fournisseur' }}
+            @if (isGuestMode()) {
+              • Clé invité locale
+            }
+          </span>
+        </div>
+
+        @for (message of messages(); track message.id) {
+          @if (message.role === 'user') {
+            <div class="message-row message-row--user">
+              <div class="user-bubble-container">
+                <div class="user-bubble">
+                  {{ message.content }}
+                </div>
+                <div class="message-meta">
+                  <span>Vous</span>
+                  <span>•</span>
+                  <span>Message</span>
+                </div>
+              </div>
+              <div class="avatar avatar--user">
+                <mat-icon>person</mat-icon>
+              </div>
+            </div>
+          } @else {
+            <div class="message-row message-row--assistant">
+              <div class="avatar avatar--assistant">
+                <mat-icon>auto_awesome</mat-icon>
+              </div>
+              <div class="assistant-content-container">
+                <div class="assistant-header-meta">
+                  <span class="assistant-model-name">
+                    {{ selectedModelDisplayName() }}
+                  </span>
+                  <span>•</span>
+                  <span class="assistant-status-tag">Réponse générée</span>
+                </div>
+
+                <div class="assistant-card">
+                  <app-rich-message
+                    [content]="message.content"
+                    [renderState]="message.isUnsaved ? 'interrupted' : 'complete'"
+                  />
+                </div>
+
+                <div class="assistant-actions">
+                  <button
+                    type="button"
+                    class="action-pill-btn"
+                    (click)="copyMessage(message.content, message.id)"
+                    title="Copier le texte"
+                  >
+                    <mat-icon>
+                      {{ copiedMessageId() === message.id ? 'check' : 'content_copy' }}
+                    </mat-icon>
+                    <span>
+                      {{ copiedMessageId() === message.id ? 'Copié !' : 'Copier' }}
+                    </span>
+                  </button>
+
+                  @if (message.isUnsaved) {
+                    <span class="unsaved-badge">Non sauvegardé</span>
+                  }
+                </div>
+
+              </div>
+            </div>
+          }
+        }
+
+        @if (showCurrentAssistant()) {
+          <div class="message-row message-row--assistant">
+            <div class="avatar avatar--assistant avatar--pulse">
+              <mat-icon>auto_awesome</mat-icon>
+            </div>
+            <div class="assistant-content-container">
+              <div class="assistant-header-meta">
+                <span class="assistant-model-name">
+                  {{ selectedModelDisplayName() }}
+                </span>
+                <span>•</span>
+                <span class="assistant-status-tag">
+                  {{ currentAssistantStatusLabel() }}
+                </span>
+              </div>
+
+              @if (currentAssistantHasContent()) {
+                <div class="assistant-card">
+                  <app-rich-message
+                    [content]="chatStream.assistantText()"
+                    [renderState]="currentAssistantRenderState()"
+                  />
+                </div>
+              } @else if (
+                chatStream.status() === 'loading' ||
+                chatStream.status() === 'streaming'
+                ) {
+                <div class="assistant-card">
+                  <div class="streaming-placeholder">
+                    <mat-spinner diameter="20"></mat-spinner>
+                    <span>Génération de la réponse en cours…</span>
+                  </div>
+                </div>
+              } @else if (chatStream.status() === 'completed') {
+                <div class="assistant-card">
+                  <p class="assistant-empty-response" role="status">
+                    Aucune réponse reçue.
+                  </p>
+                </div>
+              }
+
+              @if (chatStream.assistantResponseNotSaved()) {
+                <div class="assistant-actions">
+                  <span class="unsaved-badge">Réponse interrompue — non enregistrée</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </main>
+        @if (!autoScrollEnabled()) {
+          <button
+            type="button"
+            class="auto-scroll-resume"
+            aria-label="Revenir au dernier message et reprendre le suivi"
+            (click)="resumeAutoScroll()"
+          >
+            <mat-icon aria-hidden="true">south</mat-icon>
+          </button>
+        }
+    </div>
+
+    <!-- Zone de saisie fixée en bas -->
+    <footer class="bottom-composer-wrapper">
+
+      <div
+        class="composer-card composer-card--bottom"
+        [class.composer-card--expanded]="isComposerExpanded()"
+      >
+        <!-- Zone de saisie -->
+        <textarea
+          #messageTextarea
+          class="composer-textarea composer-textarea--bottom"
+          rows="1"
+          maxlength="20000"
+          placeholder="Poursuivez la discussion..."
+          [value]="messageDraft()"
+          [disabled]="isBusy()"
+          (input)="onMessageInput($event)"
+          (keydown)="onKeyDown($event)"
+        ></textarea>
+
+        <!-- Barre des boutons -->
+        <div class="composer-card__footer">
+
+          <div class="composer-card__left">
+            <button
+              type="button"
+              class="composer-tool-btn"
+              title="Joindre un fichier"
+            >
+              <mat-icon>attach_file</mat-icon>
+            </button>
+          </div>
+
+          <div class="composer-card__right">
+
+            @if (
+              chatStream.status() === 'loading' ||
+              chatStream.status() === 'streaming'
+              ) {
+              <button
+                type="button"
+                class="stop-btn"
+                (click)="cancelGeneration()"
+                title="Arrêter la réponse"
+              >
+                <mat-icon>stop</mat-icon>
+                <span>Arrêter</span>
+              </button>
+            }
+
+            <button
+              type="button"
+              class="send-btn"
+              [disabled]="!canSend()"
+              (click)="sendMessage()"
+              title="Envoyer"
+            >
+              <mat-icon>arrow_upward</mat-icon>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-composer-meta">
+        <button
+          type="button"
+          class="model-pill-btn"
+          (click)="navigateToProviders()"
+          title="Changer de modèle dans Providers"
+        >
+          <span class="model-pill-dot"></span>
+          <span class="model-pill-name">{{ selectedModelDisplayName() }}</span>
+          <mat-icon class="model-pill-icon">tune</mat-icon>
+        </button>
+
+        <p class="disclaimer-text disclaimer-text--small">
+          ChatMP orchestre des LLMs tiers. Les réponses peuvent contenir des
+          inexactitudes factuelles.
+        </p>
+      </div>
+    </footer>
+  }
+</div>

@@ -1,0 +1,76 @@
+<section class="landing-page">
+  <header class="hero">
+    <div class="hero-copy">
+      <div class="hero-badge">
+        <mat-icon>auto_awesome</mat-icon>
+        <span>AI Nexus • Multi-provider chat</span>
+      </div>
+
+      <h1>Une plateforme de chat sécurisée, persistante et prête pour le streaming SSE.</h1>
+
+      <p>
+        Connectez vos comptes, gérez vos clés API et discutez avec vos providers favoris dans une
+        expérience unifiée, locale et reproductible.
+      </p>
+
+      <div class="hero-actions">
+        <a mat-flat-button color="primary" routerLink="/auth/register">Créer un compte</a>
+        <a mat-stroked-button routerLink="/auth/login">Se connecter</a>
+      </div>
+    </div>
+
+    <mat-card class="hero-card">
+      <mat-card-header>
+        <mat-card-title>Ce que propose AI Nexus</mat-card-title>
+        <mat-card-subtitle>Fonctionnel dès le MVP</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="hero-list">
+        <div class="hero-list-item">
+          <mat-icon>lock</mat-icon>
+          <span>Session sécurisée via cookies httpOnly</span>
+        </div>
+        <div class="hero-list-item">
+          <mat-icon>sync_alt</mat-icon>
+          <span>Streaming token par token via SSE</span>
+        </div>
+        <div class="hero-list-item">
+          <mat-icon>dns</mat-icon>
+          <span>OpenAI et Anthropic dans un même socle</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </header>
+
+  <section class="features-grid" aria-label="Fonctionnalités principales">
+    <mat-card>
+      <mat-card-header>
+        <mat-icon mat-card-avatar>forum</mat-icon>
+        <mat-card-title>Chat persistant</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        Les conversations restent sauvegardées côté serveur pour l’utilisateur connecté.
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-icon mat-card-avatar>vpn_key</mat-icon>
+        <mat-card-title>Clés API utilisateur</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        Gérez vos clés sans les exposer dans la base ni dans les logs applicatifs.
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-icon mat-card-avatar>admin_panel_settings</mat-icon>
+        <mat-card-title>Administration des providers</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        Contrôlez les providers et leurs modèles depuis une interface dédiée.
+      </mat-card-content>
+    </mat-card>
+  </section>
+</section>

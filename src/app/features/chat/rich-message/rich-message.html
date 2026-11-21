@@ -1,0 +1,176 @@
+<section
+  class="rich-message"
+  [class.rich-message--streaming]="renderState() === 'streaming'"
+>
+  @for (block of blocks(); track $index) {
+    @switch (block.type) {
+      @case ('paragraph') {
+        <p class="rich-message__paragraph">
+          <ng-container
+            [ngTemplateOutlet]="renderInline"
+            [ngTemplateOutletContext]="{ $implicit: block.children }"
+          />
+        </p>
+      }
+
+      @case ('heading') {
+        @switch (block.level) {
+          @case (1) {
+            <h1 class="rich-message__heading">
+              <ng-container
+                [ngTemplateOutlet]="renderInline"
+                [ngTemplateOutletContext]="{ $implicit: block.children }"
+              />
+            </h1>
+          }
+          @case (2) {
+            <h2 class="rich-message__heading">
+              <ng-container
+                [ngTemplateOutlet]="renderInline"
+                [ngTemplateOutletContext]="{ $implicit: block.children }"
+              />
+            </h2>
+          }
+          @case (3) {
+            <h3 class="rich-message__heading">
+              <ng-container
+                [ngTemplateOutlet]="renderInline"
+                [ngTemplateOutletContext]="{ $implicit: block.children }"
+              />
+            </h3>
+          }
+        }
+      }
+
+      @case ('list') {
+        @if (block.ordered) {
+          <ol class="rich-message__list">
+            @for (item of block.items; track $index) {
+              <li>
+                <ng-container
+                  [ngTemplateOutlet]="renderInline"
+                  [ngTemplateOutletContext]="{ $implicit: item }"
+                />
+              </li>
+            }
+          </ol>
+        } @else {
+          <ul class="rich-message__list">
+            @for (item of block.items; track $index) {
+              <li>
+                <ng-container
+                  [ngTemplateOutlet]="renderInline"
+                  [ngTemplateOutletContext]="{ $implicit: item }"
+                />
+              </li>
+            }
+          </ul>
+        }
+      }
+
+      @case ('blockquote') {
+        <blockquote class="rich-message__blockquote">
+          <ng-container
+            [ngTemplateOutlet]="renderInline"
+            [ngTemplateOutletContext]="{ $implicit: block.children }"
+          />
+        </blockquote>
+      }
+
+      @case ('table') {
+        <div class="rich-message__table-scroll" role="region" aria-label="Tableau de la réponse" tabindex="0">
+          <table class="rich-message__table">
+            <thead>
+            <tr>
+              @for (header of block.headers; track $index) {
+                <th scope="col">{{ header }}</th>
+              }
+            </tr>
+            </thead>
+
+            <tbody>
+              @for (row of block.rows; track $index) {
+                <tr>
+                  @for (cell of row; track $index) {
+                    <td>{{ cell }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      @case ('math-block') {
+        <app-math-expression
+          [source]="block.source"
+          [displayMode]="true"
+        />
+      }
+      @case ('code-block') {
+        <app-code-block
+          [code]="block.code"
+          [language]="block.language"
+          [isProvisional]="block.isProvisional"
+        />
+      }
+
+      @default {
+        <!-- Aucun contenu du contrat n'est injecté comme HTML. -->
+      }
+    }
+  }
+</section>
+
+<ng-template #renderInline let-nodes>
+  @for (node of nodes; track $index) {
+    @switch (node.type) {
+      @case ('text') {
+        {{ node.text }}
+      }
+
+      @case ('strong') {
+        <strong>
+          <ng-container
+            [ngTemplateOutlet]="renderInline"
+            [ngTemplateOutletContext]="{ $implicit: node.children }"
+          />
+        </strong>
+      }
+
+      @case ('emphasis') {
+        <em>
+          <ng-container
+            [ngTemplateOutlet]="renderInline"
+            [ngTemplateOutletContext]="{ $implicit: node.children }"
+          />
+        </em>
+      }
+
+      @case ('link') {
+        @if (safeHref(node.href); as href) {
+          <a [href]="href" target="_blank" rel="noopener noreferrer">
+            <ng-container
+              [ngTemplateOutlet]="renderInline"
+              [ngTemplateOutletContext]="{ $implicit: node.label }"
+            />
+          </a>
+        } @else {
+          <ng-container
+            [ngTemplateOutlet]="renderInline"
+            [ngTemplateOutletContext]="{ $implicit: node.label }"
+          />
+        }
+      }
+      @case ('math') {
+        <app-math-expression
+          [source]="node.source"
+          [displayMode]="node.display === 'block'"
+        />
+      }
+
+      @default {
+        <!-- Les autres nœuds inline seront traités par leurs tâches dédiées. -->
+      }
+    }
+  }
+</ng-template>

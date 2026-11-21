@@ -1,0 +1,19 @@
+:host {
+  display: inline;
+}
+
+:host(.math-expression--block) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: 0 0 0.85rem;
+}
+
+.math-expression__content {
+  display: inline;
+}
+
+:host(.math-expression--block) .math-expression__content {
+  display: block;
+}

@@ -1,0 +1,1306 @@
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: #f8f9ff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ==========================================================================
+   1. VUE D'ACCUEIL CENTRALISÉE (CLAUDE STYLE)
+   ========================================================================== */
+.welcome-viewport {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.welcome-content {
+  width: 100%;
+  max-width: 48rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.welcome-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  background: #e5eeff;
+  color: #005fe6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 14px -2px rgba(0, 95, 230, 0.15);
+
+  mat-icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+.welcome-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  font-weight: 700;
+  color: #0b1c30;
+  letter-spacing: -0.02em;
+}
+
+.welcome-subtitle {
+  margin: 0 0 2rem;
+  font-size: 0.95rem;
+  color: #53606e;
+  max-width: 36rem;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   2. COMPOSER CARD (INPUT DE MESSAGE)
+   ========================================================================== */
+.composer-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e0e7ff;
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem 0.85rem;
+  box-shadow: 0 8px 30px -6px rgba(11, 28, 48, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+
+  &:focus-within {
+    border-color: #005fe6;
+    box-shadow: 0 12px 36px -4px rgba(0, 95, 230, 0.14);
+  }
+}
+
+.composer-card--welcome {
+  max-width: 100%;
+}
+
+.composer-card--bottom {
+  max-width: 60rem;
+}
+
+.composer-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #0b1c30;
+  padding: 0;
+  overflow-y: hidden;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+}
+
+.composer-textarea--bottom {
+  min-height: 1.55rem;
+  max-height: 26.25rem;
+  line-height: 1.55;
+  scrollbar-width: thin;
+  scrollbar-color: #a3a3a3 transparent;
+}
+
+.composer-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+  gap: 0.75rem;
+}
+
+.composer-card__left,
+.composer-card__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.composer-tool-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+
+  mat-icon {
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &:hover {
+    background: #f1f5f9;
+    color: #005fe6;
+  }
+}
+
+.model-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0b1c30;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+
+  &:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+  }
+}
+
+.model-pill-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #005fe6;
+}
+
+.model-pill-name {
+  max-width: 14rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.model-pill-icon {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+  color: #64748b;
+}
+
+.composer-hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: none;
+
+  @media (min-width: 640px) {
+    display: inline;
+  }
+}
+
+.send-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: none;
+  background: #005fe6;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px -2px rgba(0, 95, 230, 0.35);
+  transition: transform 0.15s, background-color 0.15s, opacity 0.15s;
+
+  mat-icon {
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &:hover:not(:disabled) {
+    background: #0049b4;
+    transform: scale(1.05);
+  }
+
+  &:disabled {
+    background: #cbd5e1;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.stop-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:hover {
+    background: #fecaca;
+  }
+}
+
+/* ==========================================================================
+   3. GUEST REMINDER & SUGGESTIONS GRID
+   ========================================================================== */
+.guest-key-reminder {
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  border-radius: 9999px;
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  color: #9a3412;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.reminder-link-btn {
+  border: none;
+  background: transparent;
+  color: #ea580c;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+
+  &:hover {
+    color: #c2410c;
+  }
+}
+
+.disclaimer-text {
+  margin-top: 1.75rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.disclaimer-text--small {
+  margin-top: 0.5rem;
+}
+
+/* ==========================================================================
+   4. VUE DU THREAD DE DISCUSSION EN COURS
+   ========================================================================== */
+.chat-thread-header {
+  height: 3.5rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-shrink: 0;
+  z-index: 5;
+}
+
+.thread-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.thread-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0b1c30;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.new-chat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0b1c30;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  &:hover:not(:disabled) {
+    background: #e2e8f0;
+  }
+}
+
+.alert-banner {
+  margin: 0.75rem 1.5rem 0;
+  padding: 0.65rem 1rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.85rem;
+}
+
+.alert-banner--error {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #991b1b;
+}
+
+.alert-btn {
+  margin-left: auto;
+  border: none;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.chat-stream-viewport {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 56rem;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow-anchor: auto;
+  scroll-behavior: auto;
+}
+
+.session-meta-banner {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background: #eff4ff;
+  color: #475569;
+  font-size: 0.75rem;
+
+  mat-icon {
+    font-size: 0.95rem;
+    width: 0.95rem;
+    height: 0.95rem;
+    color: #005fe6;
+  }
+}
+
+/* ==========================================================================
+   5. BULLES ET MESSAGES
+   ========================================================================== */
+.message-row {
+  display: flex;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.message-row--user {
+  justify-content: flex-end;
+}
+
+.message-row--assistant {
+  justify-content: flex-start;
+}
+
+.user-bubble-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 44rem;
+}
+
+.user-bubble {
+  padding: 0.85rem 1.15rem;
+  border-radius: 1.15rem 1.15rem 0.25rem 1.15rem;
+  background: #005fe6;
+  color: #ffffff;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 4px 14px -2px rgba(0, 95, 230, 0.2);
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.35rem;
+  padding-right: 0.25rem;
+}
+
+.avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.avatar--user {
+  background: #dae2fd;
+  color: #131b2e;
+}
+
+.avatar--assistant {
+  background: #005fe6;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 95, 230, 0.25);
+}
+
+.avatar--pulse {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 95, 230, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(0, 95, 230, 0);
+  }
+}
+
+.assistant-content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+  max-width: 48rem;
+}
+
+.assistant-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  padding-left: 0.25rem;
+}
+
+.assistant-model-name {
+  font-weight: 600;
+  color: #0b1c30;
+}
+
+.assistant-status-tag {
+  color: #005fe6;
+  font-weight: 500;
+}
+
+.assistant-card {
+  padding: 1.15rem 1.35rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.15rem;
+  box-shadow: 0 2px 12px rgba(11, 28, 48, 0.03);
+}
+
+.assistant-text {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #0b1c30;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.streaming-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.assistant-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.action-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:hover {
+    background: #e2e8f0;
+    color: #0b1c30;
+  }
+}
+
+.unsaved-badge {
+  font-size: 0.75rem;
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+/* ==========================================================================
+   6. ZONE DE SAISIE INFÉRIEURE FIXÉE
+   ========================================================================== */
+
+/* =========================================================
+   CHAT COMPOSER - STYLE CHATGPT
+   ========================================================= */
+
+/* Conteneur général */
+.bottom-composer-wrapper {
+  width: 100%;
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 0.5rem 1.5rem 0.85rem;
+
+  box-sizing: border-box;
+  background: #f8f9ff;
+}
+
+/* =========================================================
+   CONTENEUR PRINCIPAL
+   ========================================================= */
+
+.bottom-composer-wrapper .composer-card--bottom {
+  width: 100%;
+  max-width: 60rem;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 2.75rem;
+  grid-template-areas: "attach input send";
+
+  align-items: center;
+  gap: 0;
+
+  min-height: 4.2rem;
+  padding: 0.5rem 0.9rem;
+
+  background: #ffffff;
+  border: 1px solid #d6d8df;
+  border-radius: 1.4rem;
+
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.07);
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    border-radius 0.2s ease;
+}
+
+/* Focus */
+.bottom-composer-wrapper
+.composer-card--bottom:focus-within {
+  border-color: #c5cbd5;
+
+  box-shadow:
+    0 10px 35px rgba(15, 23, 42, 0.10);
+}
+
+/* =========================================================
+   TEXTAREA
+   ========================================================= */
+
+.composer-textarea--bottom {
+  grid-area: input;
+
+  display: block;
+
+  width: 100%;
+  min-width: 0;
+
+  min-height: 1.55rem;
+  max-height: 26.25rem;
+
+  margin: 0;
+  padding: 0;
+
+  background: transparent;
+
+  border: none;
+  outline: none;
+  resize: none;
+
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.55;
+
+  color: #172033;
+
+  overflow-y: hidden;
+
+  scrollbar-width: thin;
+  scrollbar-color: #a3a3a3 transparent;
+
+  box-sizing: border-box;
+}
+
+/* Placeholder */
+.composer-textarea--bottom::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+/* Désactivé */
+.composer-textarea--bottom:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   FOOTER ET BOUTONS
+   ========================================================= */
+
+/* Footer transparent pour utiliser la grille principale */
+.bottom-composer-wrapper .composer-card__footer {
+  display: contents;
+}
+
+/* Zone gauche : trombone */
+.composer-card__left {
+  grid-area: attach;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Zone droite : envoi */
+.composer-card__right {
+  grid-area: send;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 0.5rem;
+}
+
+/* =========================================================
+   BOUTON PIÈCE JOINTE
+   ========================================================= */
+
+.bottom-composer-wrapper .composer-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2.5rem;
+  height: 2.5rem;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: #64748b;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.bottom-composer-wrapper
+.composer-tool-btn:hover {
+  background: #f1f5f9;
+  color: #005fe6;
+}
+
+.bottom-composer-wrapper
+.composer-tool-btn mat-icon {
+  font-size: 1.4rem;
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* =========================================================
+   BOUTON ENVOI
+   ========================================================= */
+
+.bottom-composer-wrapper .send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2.75rem;
+  height: 2.75rem;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #2864d7;
+  color: #ffffff;
+
+  cursor: pointer;
+  flex-shrink: 0;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.bottom-composer-wrapper
+.send-btn:hover:not(:disabled) {
+  background: #0049b4;
+  transform: scale(1.04);
+}
+
+.bottom-composer-wrapper
+.send-btn:disabled {
+  background: #dce3ec;
+  color: #ffffff;
+
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.bottom-composer-wrapper
+.send-btn mat-icon {
+  font-size: 1.4rem;
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* =========================================================
+   BOUTON ARRÊTER
+   ========================================================= */
+
+.bottom-composer-wrapper .stop-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.35rem;
+
+  min-height: 2.5rem;
+  padding: 0 0.8rem;
+
+  border: none;
+  border-radius: 1.5rem;
+
+  background: #fee2e2;
+  color: #dc2626;
+
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.bottom-composer-wrapper
+.stop-btn:hover {
+  background: #fecaca;
+}
+
+/* =========================================================
+   MODE MULTILIGNE
+   ========================================================= */
+
+.bottom-composer-wrapper
+.composer-card--bottom.composer-card--expanded {
+
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr);
+
+  grid-template-areas:
+    "input"
+    "footer";
+
+  align-items: stretch;
+
+  min-height: 6.5rem;
+
+  padding: 0.85rem 1rem 0.55rem;
+}
+
+/* Texte en haut */
+.composer-card--expanded
+.composer-textarea--bottom {
+  grid-area: input;
+  align-self: start;
+}
+
+/* Footer en bas */
+.bottom-composer-wrapper
+.composer-card--expanded
+.composer-card__footer {
+
+  grid-area: footer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  min-height: 2.75rem;
+
+  margin-top: 0.35rem;
+  padding: 0;
+
+  border: none;
+}
+
+/* Trombone en bas à gauche */
+.composer-card--expanded
+.composer-card__left {
+  grid-area: auto;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Envoi en bas à droite */
+.composer-card--expanded
+.composer-card__right {
+  grid-area: auto;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* =========================================================
+   INFORMATIONS SOUS LE COMPOSER
+   ========================================================= */
+
+.bottom-composer-meta {
+  width: 100%;
+  max-width: 60rem;
+
+  margin: 0.5rem auto 0;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.25rem 0.75rem;
+
+  box-sizing: border-box;
+}
+
+/* Badge modèle */
+.bottom-composer-meta .model-pill-btn {
+  flex-shrink: 0;
+}
+
+/* Disclaimer */
+.bottom-composer-meta .disclaimer-text {
+  margin: 0;
+
+  text-align: center;
+}
+
+/* =========================================================
+   RESPONSIVE MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+  .bottom-composer-wrapper {
+    padding: 0.5rem 0.75rem 0.65rem;
+  }
+
+  .bottom-composer-wrapper
+  .composer-card--bottom {
+    border-radius: 1.2rem;
+
+    padding: 0.5rem 0.65rem;
+
+    grid-template-columns:
+      2.25rem minmax(0, 1fr) 2.5rem;
+  }
+
+  .composer-textarea--bottom {
+    font-size: 0.95rem;
+  }
+
+  .bottom-composer-wrapper
+  .send-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .bottom-composer-wrapper
+  .composer-card--bottom.composer-card--expanded {
+    grid-template-columns: minmax(0, 1fr);
+
+    padding: 0.75rem 0.8rem 0.5rem;
+  }
+
+  .bottom-composer-meta {
+    gap: 0.35rem;
+  }
+
+  .bottom-composer-meta .disclaimer-text {
+    font-size: 0.7rem;
+  }
+}
+
+/* ==========================================================
+   CORRECTION FINALE - ALIGNEMENT ET DIMENSIONS DU COMPOSER
+   ========================================================== */
+
+/* Conteneur général */
+.bottom-composer-wrapper {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 0.5rem 1.5rem 0.85rem;
+  box-sizing: border-box;
+  background: #f8f9ff;
+}
+
+/* Alignement avec la zone de conversation */
+.bottom-composer-wrapper .composer-card--bottom {
+  width: 100%;
+  max-width: 56rem;
+  min-width: 0;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  box-sizing: border-box;
+}
+
+/* État initial : une seule ligne */
+.bottom-composer-wrapper
+.composer-card--bottom:not(.composer-card--expanded) {
+
+  display: grid;
+
+  grid-template-columns: 2.5rem minmax(0, 1fr) 2.75rem;
+  grid-template-areas: "attach input send";
+
+  align-items: center;
+
+  min-height: 4.2rem;
+  height: auto;
+
+  padding: 0.5rem 0.9rem;
+}
+
+/* Empêcher le textarea de provoquer un débordement */
+.bottom-composer-wrapper .composer-textarea--bottom {
+  width: 100%;
+  min-width: 0;
+
+  height: auto;
+  field-sizing: content;
+  min-height: 1.55rem;
+  max-height: 26.25rem;
+
+  margin: 0;
+  padding: 0;
+
+  resize: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  box-sizing: border-box;
+}
+
+/* Footer en mode initial */
+.bottom-composer-wrapper .composer-card__footer {
+  display: contents;
+}
+
+/* Bouton pièce jointe */
+.bottom-composer-wrapper .composer-card__left {
+  grid-area: attach;
+}
+
+/* Bouton envoyer */
+.bottom-composer-wrapper .composer-card__right {
+  grid-area: send;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Mode multilignes */
+.bottom-composer-wrapper
+.composer-card--bottom.composer-card--expanded {
+
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "input"
+    "footer";
+
+  align-items: stretch;
+
+  min-height: 6.5rem;
+  height: auto;
+
+  padding: 0.85rem 1rem 0.55rem;
+}
+
+/* Texte en haut */
+.bottom-composer-wrapper
+.composer-card--expanded .composer-textarea--bottom {
+
+  grid-area: input;
+  align-self: start;
+
+  height: auto !important;
+  min-height: 3rem;
+  max-height: 10rem;
+
+  overflow-y: auto;
+}
+
+/* Footer en bas */
+.bottom-composer-wrapper
+.composer-card--expanded .composer-card__footer {
+
+  grid-area: footer;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+
+  margin-top: 0.35rem;
+  padding: 0;
+
+  border: none;
+}
+
+/* Pièce jointe en bas à gauche */
+.bottom-composer-wrapper
+.composer-card--expanded .composer-card__left {
+  display: flex;
+  align-items: center;
+}
+
+/* Envoi en bas à droite */
+.bottom-composer-wrapper
+.composer-card--expanded .composer-card__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Informations sous le composer : même largeur */
+.bottom-composer-wrapper .bottom-composer-meta {
+  width: 100%;
+  max-width: 56rem;
+
+  margin: 0.5rem auto 0;
+
+  box-sizing: border-box;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+
+  .bottom-composer-wrapper {
+    padding: 0.5rem 0.75rem 0.65rem;
+  }
+
+  .bottom-composer-wrapper .composer-card--bottom {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bottom-composer-wrapper
+  .composer-card--bottom:not(.composer-card--expanded) {
+    grid-template-columns: 2.25rem minmax(0, 1fr) 2.5rem;
+  }
+
+  .bottom-composer-wrapper
+  .composer-card--bottom.composer-card--expanded {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bottom-composer-wrapper .bottom-composer-meta {
+    max-width: 100%;
+  }
+}
+
+
+
+.chat-workspace {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-workspace > .chat-container {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+.chat-stream-viewport {
+  overflow-anchor: none;
+  scroll-behavior: auto;
+}
+
+.chat-stream-frame {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.chat-stream-frame .chat-stream-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.auto-scroll-resume {
+  position: absolute;
+  z-index: 6;
+  bottom: 1rem;
+  left: 50%;
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  transform: translateX(-50%);
+  border: 1px solid #dbe2ea;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  box-shadow: 0 3px 12px rgb(15 23 42 / 12%);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.auto-scroll-resume:hover {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #005fe6;
+}
+
+.auto-scroll-resume mat-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  font-size: 1.1rem;
+}
+.assistant-empty-response {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
