@@ -1,0 +1,55 @@
+@if (conversations().length > 0) {
+  <aside class="history-sidebar" aria-label="Historique des conversations">
+    <header class="history-sidebar__header">
+      <h2>RÉCENTS</h2>
+
+      <button
+        type="button"
+        class="history-sidebar__new-button"
+        aria-label="Nouvelle conversation"
+        title="Nouvelle conversation"
+        [disabled]="disabled"
+        (click)="requestNewConversation()"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </header>
+
+    <nav class="history-sidebar__list" aria-label="Conversations récentes">
+      @for (conversation of conversations(); track conversation.id) {
+        <button
+          type="button"
+          class="history-sidebar__item"
+          [class.history-sidebar__item--active]="
+            activeConversationId === conversation.id
+          "
+          [disabled]="disabled"
+          [attr.aria-current]="
+            activeConversationId === conversation.id ? 'page' : null
+          "
+          [attr.data-conversation-id]="conversation.id"
+          (click)="selectConversation(conversation.id)"
+        >
+          <mat-icon aria-hidden="true">chat_bubble_outline</mat-icon>
+          <span class="history-sidebar__item-title">
+            {{ conversation.title ?? 'Nouvelle conversation' }}
+          </span>
+        </button>
+      }
+    </nav>
+
+    <footer class="history-sidebar__footer">
+      <a
+        class="history-sidebar__all-link"
+        routerLink="/conversations"
+        aria-label="Tout afficher dans l’historique"
+      >
+        <span>
+          <mat-icon aria-hidden="true">history</mat-icon>
+          <span>Tout afficher</span>
+        </span>
+        <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+      </a>
+    </footer>
+  </aside>
+}

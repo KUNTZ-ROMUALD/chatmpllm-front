@@ -10,7 +10,7 @@ import {
   Page,
   PageParams,
   UpdateConversationInput,
-} from '../conversation.models';
+} from './conversation.models';
 
 const CONVERSATIONS_API_URL = '/api/v1/conversations';
 
@@ -100,6 +100,19 @@ export class ConversationsApiService {
       )
       .pipe(map(mapConversation));
   }
+  /**
+   * Charge une page de conversations récentes dans l'ordre défini par l'API.
+   * La première page contient 10 éléments par défaut.
+   */
+  getRecentConversations(
+    params: PageParams = {},
+  ): Observable<Page<ConversationListItem>> {
+    return this.getConversations({
+      ...params,
+      limit: params.limit ?? 10,
+      offset: params.offset ?? 0,
+    });
+  }
 
   updateConversation(
     conversationId: string,
@@ -143,6 +156,7 @@ export class ConversationsApiService {
       )
       .pipe(map((page) => mapPage(page, mapConversationMessage)));
   }
+
 
   private toPageParams(params: PageParams, defaultLimit: number): HttpParams {
     return new HttpParams()

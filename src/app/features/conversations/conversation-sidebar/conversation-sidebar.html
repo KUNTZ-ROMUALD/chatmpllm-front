@@ -1,0 +1,307 @@
+<aside class="conversation-sidebar" aria-label="Historique des conversations">
+  <header class="conversation-sidebar__header">
+    <div class="history-title-block">
+      <div class="section-kicker">
+        <span class="material-chip-icon">history</span>
+        <span>Sessions & Archives</span>
+      </div>
+      <h2>Historique des conversations</h2>
+      <p>
+        Retrouvez, filtrez et gérez l'ensemble de vos échanges synchronisés à travers tous vos fournisseurs IA.
+      </p>
+    </div>
+
+    <div class="history-header-actions">
+      <button type="button" class="secondary-action">
+        <span class="material-chip-icon">download</span>
+        <span>Exporter l'historique</span>
+      </button>
+      <button type="button" class="primary-action">
+        <span class="material-chip-icon">add</span>
+        <span>Nouvelle conversation</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="history-filter-card" aria-label="Filtres de l'historique">
+    <div class="history-tools">
+      <label class="search-field">
+        <span class="visually-hidden">Rechercher dans les conversations chargées</span>
+        <span class="material-chip-icon">search</span>
+        <input
+          type="search"
+          placeholder="Rechercher dans les conversations, mots-clés, prompts..."
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+        />
+      </label>
+
+      <div class="filter-tabs" aria-label="Filtrer l'historique">
+        <button
+          type="button"
+          [class.filter-tabs__item--active]="providerFilter() === 'all'"
+          (click)="setProviderFilter('all')"
+        >
+          Tous
+        </button>
+        <button
+          type="button"
+          [class.filter-tabs__item--active]="providerFilter() === 'openai'"
+          (click)="setProviderFilter('openai')"
+        >
+          OpenAI
+        </button>
+        <button
+          type="button"
+          [class.filter-tabs__item--active]="providerFilter() === 'anthropic'"
+          (click)="setProviderFilter('anthropic')"
+        >
+          Anthropic
+        </button>
+        <button
+          type="button"
+          [class.filter-tabs__item--active]="providerFilter() === 'google'"
+          (click)="setProviderFilter('google')"
+        >
+          Google
+        </button>
+        <button
+          type="button"
+          [class.filter-tabs__item--active]="providerFilter() === 'mistral'"
+          (click)="setProviderFilter('mistral')"
+        >
+          Mistral
+        </button>
+      </div>
+
+      <div class="date-tabs" aria-label="Filtrer par date">
+        <button type="button" [class.date-tabs__item--active]="dateFilter() === 'all'" (click)="setDateFilter('all')">
+          Toutes dates
+        </button>
+        <button type="button" [class.date-tabs__item--active]="dateFilter() === 'week'" (click)="setDateFilter('week')">
+          Cette semaine
+        </button>
+        <button type="button" [class.date-tabs__item--active]="dateFilter() === 'today'" (click)="setDateFilter('today')">
+          Aujourd'hui
+        </button>
+      </div>
+    </div>
+  </section>
+
+  @if (actionFeedback(); as feedback) {
+    <p class="action-feedback" role="status">{{ feedback }}</p>
+  }
+
+  @if (actionError(); as error) {
+    <p class="action-error" role="alert">{{ error }}</p>
+  }
+
+  @if (isInitialLoading()) {
+    <p class="sidebar-state" role="status">Chargement de l’historique…</p>
+  } @else if (!hasLoaded() && loadError()) {
+    <div class="sidebar-state sidebar-state--error" role="alert">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="retry()">Réessayer</button>
+    </div>
+  } @else if (hasLoaded() && total() === 0) {
+    <div class="sidebar-state sidebar-state--empty">
+      <h3>Aucune conversation</h3>
+      <p>Vos conversations apparaîtront ici.</p>
+    </div>
+  } @else {
+    <nav class="conversation-list" aria-label="Conversations">
+      <div class="conversation-group-heading">
+        <span class="group-dot"></span>
+        <h3>Conversations chargées</h3>
+        <span class="group-count">{{ filteredCount() }} sessions</span>
+      </div>
+
+      @for (conversation of visibleConversations(); track conversation.id) {
+        <article
+          class="conversation-row"
+          [class.conversation-row--active]="activeId() === conversation.id"
+        >
+          @if (renameConversationId() === conversation.id) {
+            <form
+              class="rename-form"
+              (ngSubmit)="saveRename(conversation.id)"
+            >
+              <label [for]="'rename-' + conversation.id">
+                Nouveau titre
+              </label>
+              <input
+                [id]="'rename-' + conversation.id"
+                type="text"
+                maxlength="200"
+                [formControl]="renameTitle"
+                autocomplete="off"
+              />
+
+              @if (renameTitle.touched && renameTitle.hasError('required')) {
+                <span class="field-error">Le titre est requis.</span>
+              } @else if (
+                renameTitle.touched && renameTitle.hasError('pattern')
+                ) {
+                <span class="field-error">
+                  Le titre ne peut pas être composé uniquement d’espaces.
+                </span>
+              } @else if (
+                renameTitle.touched && renameTitle.hasError('maxlength')
+                ) {
+                <span class="field-error">
+                  Le titre ne peut pas dépasser 200 caractères.
+                </span>
+              }
+
+              <div class="row-actions">
+                <button
+                  type="submit"
+                  [disabled]="isRenaming() || isDeleting()"
+                >
+                  @if (isRenaming()) {
+                    Enregistrement…
+                  } @else {
+                    Enregistrer
+                  }
+                </button>
+                <button
+                  type="button"
+                  [disabled]="isRenaming()"
+                  (click)="cancelRename()"
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
+          } @else {
+            <div class="conversation-item">
+              <button
+                class="conversation-item__main"
+                type="button"
+                [disabled]="disabled"
+                [attr.aria-current]="activeId() === conversation.id ? 'page' : null"
+                (click)="selectConversation(conversation.id)"
+              >
+                <span class="conversation-item__title">
+                  {{ conversation.title ?? 'Nouvelle conversation' }}
+                </span>
+                <span class="model-badge">{{ conversation.providerId }}</span>
+                @if (conversation.lastMessageAt; as lastMessageAt) {
+                  <time
+                    class="conversation-item__date"
+                    [attr.datetime]="lastMessageAt"
+                  >
+                    {{ lastMessageAt | date: 'medium' }}
+                  </time>
+                } @else {
+                  <span class="conversation-item__date">Aucun message</span>
+                }
+                <span class="conversation-preview">
+                  Conversation synchronisée prête à être reprise dans le Chat.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="open-chat-btn"
+                [disabled]="disabled"
+                (click)="selectConversation(conversation.id)"
+              >
+                Ouvrir
+              </button>
+            </div>
+
+            <div class="row-actions">
+              <button
+                type="button"
+                [disabled]="disabled"
+                [attr.aria-label]="'Renommer ' + (conversation.title ?? 'la conversation')"
+                (click)="startRename(conversation)"
+              >
+                Renommer
+              </button>
+              <button
+                type="button"
+                [disabled]="disabled"
+                [attr.aria-label]="'Supprimer ' + (conversation.title ?? 'la conversation')"
+                (click)="requestDeleteConfirmation(conversation.id)"
+              >
+                Supprimer
+              </button>
+            </div>
+          }
+
+          @if (pendingDeleteConversationId() === conversation.id) {
+            <div class="dialog-backdrop">
+              <section
+                class="delete-dialog"
+                role="alertdialog"
+                aria-modal="true"
+                [attr.aria-labelledby]="'delete-title-' + conversation.id"
+                [attr.aria-describedby]="'delete-description-' + conversation.id"
+              >
+                <h3 [id]="'delete-title-' + conversation.id">
+                  Supprimer cette conversation ?
+                </h3>
+                <p [id]="'delete-description-' + conversation.id">
+                  Cette suppression est définitive.
+                </p>
+                <div class="row-actions">
+                  <button
+                    type="button"
+                    [disabled]="isDeleting()"
+                    (click)="confirmDelete(conversation.id)"
+                  >
+                    @if (isDeleting()) {
+                      Suppression…
+                    } @else {
+                      Confirmer la suppression
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    [disabled]="isDeleting()"
+                    (click)="cancelDelete()"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </section>
+            </div>
+          }
+        </article>
+      } @empty {
+        @if (searchTerm().trim().length > 0) {
+          <p class="sidebar-state">
+            Aucun titre chargé ne correspond à cette recherche.
+          </p>
+        } @else {
+          <p class="sidebar-state">
+            Aucune conversation chargée ne correspond au filtre choisi.
+          </p>
+        }
+      }
+    </nav>
+
+    @if (loadError()) {
+      <div class="sidebar-state sidebar-state--error" role="alert">
+        <p>{{ loadError() }}</p>
+        <button type="button" (click)="retry()">Réessayer</button>
+      </div>
+    }
+
+    @if (hasNextPage()) {
+      <footer class="history-pagination">
+        <p>
+          Affichage de {{ loadedCount() }} sur {{ total() }} conversations archivées
+        </p>
+        <div class="pagination-actions">
+          <button type="button" disabled>Précédent</button>
+          <button type="button" class="pagination-active">1</button>
+          <button type="button" [disabled]="isLoadingMore()" (click)="loadAllAvailable()">2</button>
+          <button type="button" [disabled]="isLoadingMore()" (click)="loadAllAvailable()">Suivant</button>
+        </div>
+      </footer>
+    }
+  }
+</aside>

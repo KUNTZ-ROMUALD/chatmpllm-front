@@ -1,0 +1,168 @@
+<main class="providers-page">
+  <header class="page-header">
+    <div>
+      <p class="page-header__eyebrow">Configuration</p>
+      <h1>Provider et modèle</h1>
+      <p class="page-header__description">
+        Choisissez le fournisseur et le modèle qui seront utilisés par défaut dans le Chat.
+      </p>
+    </div>
+
+    <button mat-stroked-button type="button" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      <span>Retour au Chat</span>
+    </button>
+  </header>
+
+  @if (isLoading()) {
+    <div class="page-state" role="status">
+      <mat-spinner diameter="32" />
+      <span>Chargement des fournisseurs…</span>
+    </div>
+  } @else if (pageError(); as error) {
+    <section class="notice notice--error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-button type="button" (click)="ngOnInit()">Réessayer</button>
+    </section>
+  } @else if (providersWithModels().length === 0) {
+    <section class="empty-state">
+      <mat-icon>hub</mat-icon>
+      <h2>Aucun fournisseur actif</h2>
+      <p>Aucun provider n’est disponible pour le moment.</p>
+    </section>
+  } @else {
+    <section class="providers-layout">
+      <div class="providers-list" aria-label="Liste des fournisseurs">
+        @for (item of providersWithModels(); track item.provider.id) {
+          <article
+            class="provider-panel"
+            [class.provider-panel--selected]="isProviderSelected(item.provider)"
+          >
+            <button
+              type="button"
+              class="provider-header"
+              (click)="selectProvider(item.provider)"
+              [attr.aria-pressed]="isProviderSelected(item.provider)"
+            >
+              <span class="provider-avatar">{{ item.provider.name.slice(0, 2).toUpperCase() }}</span>
+              <span class="provider-copy">
+                <span class="provider-name">{{ item.provider.name }}</span>
+                <span class="provider-description">
+                  {{ item.provider.description ?? 'Fournisseur disponible pour le Chat.' }}
+                </span>
+              </span>
+              <span class="provider-status">
+                @if (isProviderSelected(item.provider)) {
+                  <mat-icon>check_circle</mat-icon>
+                } @else {
+                  <mat-icon>radio_button_unchecked</mat-icon>
+                }
+              </span>
+            </button>
+
+            <div class="provider-meta">
+              @if (item.provider.supports_streaming) {
+                <mat-chip>Streaming</mat-chip>
+              }
+              @if (item.provider.supports_system_message) {
+                <mat-chip>Message système</mat-chip>
+              }
+              @if (item.provider.supports_custom_api_key) {
+                <mat-chip>Clé personnelle</mat-chip>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="models-toggle"
+              (click)="toggleProvider(item)"
+              [attr.aria-expanded]="item.isExpanded"
+            >
+              <span>{{ item.models.length }} modèle(s)</span>
+              <mat-icon>{{ item.isExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+
+            @if (item.isExpanded) {
+              <div class="models-list" aria-label="Modèles disponibles">
+                @for (model of item.models; track model.id) {
+                  <button
+                    type="button"
+                    class="model-row"
+                    [class.model-row--selected]="isModelSelected(model)"
+                    (click)="selectModel(model)"
+                    [attr.aria-pressed]="isModelSelected(model)"
+                  >
+                    <span class="model-row__main">
+                      <span class="model-row__name">
+                        {{ model.display_name || model.model_name }}
+                      </span>
+                      <span class="model-row__id">{{ model.model_name }}</span>
+                    </span>
+                    <span class="model-row__meta">
+                      {{ model.context_window === null
+                      ? 'Non renseigné'
+                      : formatContextWindow(model.context_window) }}
+                    </span>
+                    <mat-icon>
+                      {{ isModelSelected(model) ? 'check_circle' : 'radio_button_unchecked' }}
+                    </mat-icon>
+                  </button>
+                } @empty {
+                  <p class="models-empty">Aucun modèle actif pour ce provider.</p>
+                }
+              </div>
+            }
+          </article>
+        }
+      </div>
+
+      <aside class="selection-panel" aria-label="Sélection active">
+        <p class="selection-panel__eyebrow">Sélection active</p>
+        <h2>
+          @if (selectedProvider(); as selected) {
+            {{ selected.provider.name }}
+          } @else {
+            Aucun provider
+          }
+        </h2>
+
+        @if (selectedModel(); as model) {
+          <div class="selection-summary">
+            <span class="summary-label">Modèle</span>
+            <strong>{{ model.display_name || model.model_name }}</strong>
+            <span>{{ model.model_name }}</span>
+          </div>
+          <div class="selection-summary">
+            <span class="summary-label">Contexte</span>
+            <strong>{{ model.context_window === null
+              ? 'Non renseigné'
+              : formatContextWindow(model.context_window) }}</strong>
+          </div>
+        } @else {
+          <p class="selection-help">
+            Sélectionnez un modèle dans le fournisseur choisi pour activer cette configuration.
+          </p>
+        }
+
+        @if (!isAuthenticated()) {
+          <div class="guest-note">
+            <mat-icon>vpn_key</mat-icon>
+            <span>En mode invité, cette sélection sera utilisée avec la clé API locale configurée dans Clés API.</span>
+          </div>
+        }
+
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          [disabled]="!canConfirmSelection()"
+          (click)="confirmSelection()"
+        >
+          <mat-icon>check</mat-icon>
+          <span>Utiliser dans le Chat</span>
+        </button>
+      </aside>
+    </section>
+  }
+</main>

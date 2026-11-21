@@ -1,0 +1,511 @@
+<main class="api-keys-page">
+  <header class="page-header">
+    <div>
+      <p class="page-header__eyebrow">
+        <mat-icon>key</mat-icon>
+        <span>SÉCURITÉ & ACCÈS</span>
+      </p>
+      <h1>Gestion des clés API</h1>
+      <p class="page-header__description">
+        Configurez vos clés d'accès personnelles (BYOK — Bring Your Own Key)
+        pour chaque fournisseur d'IA. Vos clés sont chiffrées localement et ne
+        transitent jamais en clair.
+      </p>
+    </div>
+
+    <div class="page-actions">
+      <button mat-stroked-button type="button">
+        <mat-icon>sync</mat-icon>
+        <span>Tester tout</span>
+      </button>
+
+
+
+      <a mat-stroked-button routerLink="/chat">
+        <mat-icon>arrow_back</mat-icon>
+        <span>Retour au Chat</span>
+      </a>
+    </div>
+  </header>
+
+  @if (isGuestMode()) {
+    <section class="security-banner" aria-label="Information mode invité">
+      <div class="banner-icon-wrap">
+        <mat-icon class="banner-icon">lock</mat-icon>
+      </div>
+
+      <div class="banner-content">
+        <div class="banner-title-row">
+          <strong>Chiffrement AES-GCM 256 actif</strong>
+          <span class="security-pill">Isolé navigateur</span>
+        </div>
+        <span>
+          Les clés secrètes restent stockées dans le coffre sécurisé de votre
+          navigateur. Le serveur AI Nexus n'en conserve aucune trace.
+        </span>
+      </div>
+
+      <a mat-stroked-button routerLink="/chat" class="banner-action">
+        <mat-icon>arrow_back</mat-icon>
+        <span>Retour au Chat</span>
+      </a>
+    </section>
+  }
+
+  @if (isPageLoading()) {
+    <div class="page-state" role="status">
+      <mat-spinner diameter="32" />
+      <span>Chargement des paramètres…</span>
+    </div>
+  } @else if (pageError(); as error) {
+    <section class="notice notice--error" role="alert">
+      <p>{{ error }}</p>
+      <button mat-button type="button" (click)="ngOnInit()">
+        Réessayer
+      </button>
+    </section>
+  } @else {
+    <section
+      class="provider-priority"
+      aria-labelledby="provider-priority-title"
+    >
+      <div class="provider-priority__icon" aria-hidden="true">
+        <mat-icon>low_priority</mat-icon>
+      </div>
+
+      <div class="provider-priority__content">
+        <p class="provider-priority__eyebrow">Sélection dans le Chat</p>
+        <h2 id="provider-priority-title">Priorité du provider</h2>
+        <p>{{ providerPriorityMessage() }}</p>
+
+        @if (
+          providersWithActiveKeys().length > 1 &&
+          retainedChatProvider() === null
+          ) {
+          <div
+            class="provider-priority__candidates"
+            aria-label="Providers éligibles"
+          >
+            @for (provider of providersWithActiveKeys(); track provider.id) {
+              <span>{{ provider.name }}</span>
+            }
+          </div>
+        }
+
+        <p class="provider-priority__model-note">
+          Le modèle par défaut est défini par le provider, indépendamment de sa
+          clé API. Ajouter ou supprimer une clé ne change pas ce modèle.
+        </p>
+      </div>
+    </section>
+
+    @if (defaultModelsError(); as error) {
+      <p class="notice notice--error" role="alert">{{ error }}</p>
+    }
+
+    <section class="settings-card">
+      <div class="settings-card__heading">
+        <div>
+          <h2>Ajouter une nouvelle clé API</h2>
+          <p>
+            @if (isGuestMode()) {
+              Enregistrez une clé d'API sécurisée pour connecter un fournisseur.
+            } @else {
+              Enregistrez une clé d'API sécurisée pour connecter un fournisseur.
+            }
+          </p>
+        </div>
+        <span class="encryption-badge">
+          Chiffrement client AES-GCM 256
+        </span>
+      </div>
+
+      @if (providers().length === 0) {
+        <p class="empty-state">
+          Aucun fournisseur actif n’est disponible pour le moment.
+        </p>
+      } @else {
+        <div class="provider-select-row">
+          <mat-form-field appearance="outline" class="provider-select">
+            <mat-label>Fournisseur</mat-label>
+            <mat-select
+              [value]="selectedProviderId()"
+              [disabled]="isSaving() || isDeleting()"
+              (selectionChange)="onProviderSelectionChange($event.value)"
+            >
+              <mat-option [value]="null">Choisir un fournisseur</mat-option>
+              @for (provider of providers(); track provider.id) {
+                <mat-option [value]="provider.id">
+                  {{ provider.name }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (!isGuestMode()) {
+            <mat-form-field appearance="outline" class="provider-select">
+              <mat-label>Nom / Libellé</mat-label>
+              <input
+                matInput
+                type="text"
+                [formControl]="keyForm.controls.keyLabel"
+                maxlength="120"
+                placeholder="Ex: Clé de production - Projets Web"
+                autocomplete="off"
+              />
+            </mat-form-field>
+          }
+        </div>
+      }
+
+      @if (selectedProvider(); as provider) {
+        <section class="key-section" aria-live="polite">
+          <div class="key-section__heading">
+            <div>
+              <h2>{{ provider.name }}</h2>
+              <p>
+                @if (selectedKeyStatus(); as keyStatus) {
+                  @if (keyStatus.isActive) {
+                    <span class="status status--active">Clé active</span>
+                  } @else {
+                    <span class="status status--inactive">Clé inactive</span>
+                  }
+                } @else {
+                  <span class="status status--empty">
+                    Aucune clé configurée
+                  </span>
+                }
+              </p>
+            </div>
+
+            @if (selectedKeyStatus()) {
+              @if (!isEditorOpen()) {
+                <button
+                  mat-button
+                  type="button"
+                  [disabled]="isSaving() || isDeleting()"
+                  (click)="startEditing()"
+                >
+                  Remplacer la clé
+                </button>
+              }
+            }
+          </div>
+
+          @if (selectedKeyStatus(); as keyStatus) {
+            @if (!isEditorOpen()) {
+              <div class="masked-key">
+                <span class="masked-key__label">Clé enregistrée</span>
+                <code aria-label="Clé API masquée">
+                  ••••••••
+                  @if (keyStatus.keyLast4) {
+                    {{ keyStatus.keyLast4 }}
+                  }
+                </code>
+                @if (keyStatus.keyLabel) {
+                  <span class="masked-key__name">
+                    {{ keyStatus.keyLabel }}
+                  </span>
+                }
+              </div>
+
+              <div class="key-actions">
+                <button
+                  mat-button
+                  color="warn"
+                  type="button"
+                  [disabled]="isSaving() || isDeleting()"
+                  (click)="requestDeleteConfirmation()"
+                >
+                  Supprimer
+                </button>
+              </div>
+            }
+          }
+
+          @if (isEditorOpen()) {
+            <form
+              class="key-form"
+              [formGroup]="keyForm"
+              autocomplete="off"
+              (ngSubmit)="saveKey()"
+            >
+              <h3>
+                @if (selectedKeyStatus()) {
+                  Remplacer la clé API
+                } @else {
+                  Ajouter une clé API
+                }
+              </h3>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Clé secrète d'API</mat-label>
+                <input
+                  matInput
+                  type="password"
+                  formControlName="apiKey"
+                  placeholder="sk-... ou mis-..."
+                  autocomplete="off"
+                  spellcheck="false"
+                  required
+                />
+
+                @if (
+                  keyForm.controls.apiKey.touched &&
+                  keyForm.controls.apiKey.hasError('required')
+                  ) {
+                  <mat-error>La clé API est requise.</mat-error>
+                } @else if (
+                  keyForm.controls.apiKey.touched &&
+                  keyForm.controls.apiKey.hasError('whitespaceOnly')
+                  ) {
+                  <mat-error>
+                    La clé ne peut pas être vide ou composée uniquement
+                    d'espaces.
+                  </mat-error>
+                }
+              </mat-form-field>
+
+              @if (operationError(); as error) {
+                <p class="notice notice--error" role="alert">{{ error }}</p>
+              }
+
+              <div class="form-actions">
+                <span class="local-encryption-note">
+                  <mat-icon>verified_user</mat-icon>
+                  Chiffré localement avec AES-GCM 256 dans votre navigateur
+                </span>
+
+                <button
+                  mat-flat-button
+                  color="primary"
+                  type="submit"
+                  [disabled]="isSaving() || isDeleting() || keyForm.invalid"
+                >
+                  @if (isSaving()) {
+                    Enregistrement…
+                  } @else if (selectedKeyStatus()) {
+                    Remplacer la clé
+                  } @else {
+                    Enregistrer la clé
+                  }
+                </button>
+
+                @if (selectedKeyStatus()) {
+                  <button
+                    mat-button
+                    type="button"
+                    [disabled]="isSaving() || isDeleting()"
+                    (click)="cancelEditing()"
+                  >
+                    Annuler
+                  </button>
+                }
+              </div>
+            </form>
+          }
+
+          @if (isDeleteConfirmationOpen()) {
+            <div class="delete-confirmation" role="alert">
+              <p>
+                Supprimer la clé de {{ provider.name }} ? Cette action est
+                définitive.
+              </p>
+
+              <div class="form-actions">
+                <button
+                  mat-flat-button
+                  color="warn"
+                  type="button"
+                  [disabled]="isDeleting()"
+                  (click)="deleteSelectedKey()"
+                >
+                  @if (isDeleting()) {
+                    Suppression…
+                  } @else {
+                    Confirmer la suppression
+                  }
+                </button>
+
+                <button
+                  mat-button
+                  type="button"
+                  [disabled]="isDeleting()"
+                  (click)="cancelDelete()"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (feedbackMessage(); as feedback) {
+            <p class="notice notice--success" role="status">
+              {{ feedback }}
+            </p>
+          }
+          @if (isResolvingDefaultModel()) {
+            <p class="notice" role="status">
+              La clé est enregistrée. Résolution du modèle par défaut…
+            </p>
+          }
+
+          @if (operationError(); as error) {
+            @if (!isEditorOpen()) {
+              <p class="notice notice--error" role="alert">{{ error }}</p>
+            }
+          }
+        </section>
+      }
+    </section>
+
+    <section class="configured-providers">
+      <div class="section-heading-row">
+        <h2>Providers actifs</h2>
+        <span>{{ providers().length }} plateformes prises en charge</span>
+      </div>
+
+      <div class="provider-key-list">
+        @for (provider of providers(); track provider.id) {
+          <article class="provider-key-card">
+            <div class="provider-key-icon">
+              <mat-icon>{{ providerIcon(provider) }}</mat-icon>
+            </div>
+
+            <div class="provider-key-copy">
+              <div class="provider-key-title-row">
+                <h3>{{ provider.name }}</h3>
+
+                @if (keyStatusFor(provider.id); as status) {
+                  @if (status.isActive) {
+                    <span class="status-pill status-pill--active">
+                      Clé active
+                    </span>
+                  } @else {
+                    <span class="status-pill status-pill--inactive">
+                      Clé inactive
+                    </span>
+                  }
+                } @else {
+                  <span class="status-pill">Non configurée</span>
+                }
+              </div>
+
+              @if (keyStatusFor(provider.id); as status) {
+                <code>
+                  {{ status.keyLabel ?? 'Clé API' }}
+                  ••••••••••••••••{{ status.keyLast4 }}
+                </code>
+              }
+
+              <div class="provider-default-model">
+                <span>Modèle par défaut :</span>
+
+                @if (isDefaultModelsLoading()) {
+                  <span role="status">Chargement…</span>
+                } @else if (defaultModelsError()) {
+                  <span>Impossible de le vérifier.</span>
+                } @else if (defaultModelFor(provider.id); as defaultModel) {
+                  <strong>
+                    {{ defaultModel.display_name || defaultModel.model_name }}
+                  </strong>
+                } @else {
+                  <span>Aucun modèle par défaut actif n’est défini.</span>
+                }
+              </div>
+
+              @if (keyStatusFor(provider.id); as status) {
+                @if (status.isActive) {
+                  <p>
+                    Le modèle par défaut est défini par
+                    {{ provider.name }}. La clé permet l’envoi des requêtes ;
+                    elle ne choisit pas le modèle.
+                  </p>
+                } @else {
+                  <p>
+                    La clé est inactive. Le modèle par défaut reste défini par
+                    {{ provider.name }}, indépendamment de cette clé.
+                  </p>
+                }
+              } @else {
+                <p>
+                  Aucune clé n’est configurée. Le modèle par défaut reste défini
+                  par {{ provider.name }} ; l’envoi peut être bloqué.
+                </p>
+              }
+            </div>
+
+            <div class="provider-key-actions">
+              <button
+                mat-button
+                type="button"
+                (click)="openEditorForProvider(provider.id)"
+              >
+                @if (keyStatusFor(provider.id)) {
+                  Modifier
+                } @else {
+                  Configurer
+                }
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="api-help-grid">
+      <article class="zero-trace-panel">
+        <h2>Politique Zéro-Trace</h2>
+        <p>
+          AI Nexus sert uniquement de passerelle directe entre votre machine et
+          l'API officielle de chaque fournisseur. Aucune télémétrie de clé,
+          aucune rétention de prompt, aucun stockage cloud tiers.
+        </p>
+        <ul>
+          <li><mat-icon>check</mat-icon> Envois signés HTTPS direct</li>
+          <li><mat-icon>check</mat-icon> Révocable instantanément</li>
+          <li><mat-icon>check</mat-icon> Chiffrement standard WebCrypto</li>
+        </ul>
+      </article>
+
+      <article class="key-links-panel">
+        <h2>Où obtenir vos clés API privées ?</h2>
+        <p>
+          Cliquez sur les plateformes ci-dessous pour accéder directement aux
+          sections de génération de jetons d'accès.
+        </p>
+
+        <div class="key-links-grid">
+          <a
+            href="https://platform.openai.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            OpenAI Platform <span>platform.openai.com</span>
+          </a>
+          <a
+            href="https://console.anthropic.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Anthropic Console <span>console.anthropic.com</span>
+          </a>
+          <a
+            href="https://aistudio.google.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Google AI Studio <span>aistudio.google.com</span>
+          </a>
+          <a
+            href="https://console.mistral.ai"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Mistral Console <span>console.mistral.ai</span>
+          </a>
+        </div>
+      </article>
+    </section>
+  }
+</main>

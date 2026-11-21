@@ -1,0 +1,130 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.rich-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #0b1c30;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.rich-message__paragraph {
+  margin: 0 0 0.85rem;
+  white-space: pre-line;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.rich-message__heading {
+  margin: 1.1rem 0 0.55rem;
+  color: inherit;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: pre-line;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+h1.rich-message__heading {
+  font-size: 1.5rem;
+}
+
+h2.rich-message__heading {
+  font-size: 1.25rem;
+}
+
+h3.rich-message__heading {
+  font-size: 1.08rem;
+}
+
+.rich-message__list {
+  margin: 0 0 0.85rem;
+  padding-left: 1.5rem;
+
+  li {
+    white-space: pre-line;
+  }
+
+  li + li {
+    margin-top: 0.2rem;
+  }
+}
+
+.rich-message__blockquote {
+  margin: 0 0 0.85rem;
+  padding: 0.15rem 0 0.15rem 0.9rem;
+  border-left: 3px solid #93b4ef;
+  color: #475569;
+  white-space: pre-line;
+}
+
+.rich-message a {
+  color: #005fe6;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+}
+
+.rich-message--streaming {
+  min-height: 1.65em;
+}
+
+
+.rich-message__table-scroll {
+  max-width: 100%;
+  margin: 0 0 0.85rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border-radius: 0.5rem;
+
+  &:focus-visible {
+    outline: 2px solid #005fe6;
+    outline-offset: 2px;
+  }
+}
+
+.rich-message__table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  color: inherit;
+  text-align: left;
+  white-space: normal;
+
+  th,
+  td {
+    min-width: 7rem;
+    max-width: 20rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #dbe3ee;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+  }
+
+  th {
+    background: #eff4ff;
+    font-weight: 600;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #f8f9ff;
+  }
+}
+h1.rich-message__heading {
+  font-size: 1.25rem; // 20 px à la taille racine par défaut
+}
+
+h2.rich-message__heading {
+  font-size: 1.125rem; // 18 px
+}
+
+h3.rich-message__heading {
+  font-size: 1rem; // 16 px
+}
