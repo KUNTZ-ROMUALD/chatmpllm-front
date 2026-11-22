@@ -31,7 +31,7 @@ const RECENT_CONVERSATIONS_LIMIT = 10;
 @Component({
   selector: 'app-chat-history-sidebar',
   standalone: true,
-  imports: [DatePipe, RouterLink,MatIconModule],
+  imports: [ RouterLink,MatIconModule],
   templateUrl: './chat-history-sidebar.html',
   styleUrl: './chat-history-sidebar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

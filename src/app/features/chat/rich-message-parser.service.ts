@@ -3,6 +3,7 @@ import type { PhrasingContent, Root, RootContent } from 'mdast';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
+import type {} from 'mdast-util-math';
 
 import type {
   RichBlockNode,
