@@ -1,0 +1,16 @@
+.git
+.git/**
+node_modules
+node_modules/**
+.angular
+.angular/**
+dist
+dist/**
+coverage
+coverage/**
+cypress
+cypress/**
+.env
+.env.*
+!.env.example
+*.log

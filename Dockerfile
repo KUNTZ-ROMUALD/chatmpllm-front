@@ -1,10 +1,31 @@
-FROM node:22-slim
+
+# ==================================
+# BUILD ANGULAR
+# ==================================
+FROM node:22-slim AS build
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm install
+
+RUN npm ci
 
 COPY . .
 
-CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "4200"]
+RUN npm run build -- --configuration production
+
+
+# ==================================
+# NGINX PRODUCTION
+# ==================================
+FROM nginx:alpine
+
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=build /app/dist/chatmpapp-front/browser/ /usr/share/nginx/html/
+
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]
